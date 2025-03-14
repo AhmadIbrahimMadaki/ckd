@@ -1,0 +1,101 @@
+id,Swelling,Urination,Tiredness,Blood Pressure,Diabetes,class
+1,No swelling,Slight increase in urination at night,"Frequently, making daily tasks harder",High (140/90 – 159/99 mmHg),Borderline or prediabetic levels,ckd
+2,"Frequent swelling, but manageable",Foamy urine or noticeable decrease in urine output,"Almost all the time, making normal activities difficult",Normal (Below 120/80 mmHg),"Diagnosed diabetes, but controlled",ckd
+3,Severe swelling that affects daily activities,No changes,"Frequently, making daily tasks harder",Slightly elevated (120/80 – 139/89 mmHg),Uncontrolled diabetes with frequent high sugar readings,ckd
+4,No swelling,Foamy urine or noticeable decrease in urine output,"Frequently, making daily tasks harder",High (140/90 – 159/99 mmHg),Borderline or prediabetic levels,ckd
+5,No swelling,Slight increase in urination at night,Rarely or never,Slightly elevated (120/80 – 139/89 mmHg),"Diagnosed diabetes, but controlled",ckd
+6,"Mild, occasional swelling",No changes,"Occasionally, but not severe",Slightly elevated (120/80 – 139/89 mmHg),"Diagnosed diabetes, but controlled",ckd
+7,No swelling,Foamy urine or noticeable decrease in urine output,Rarely or never,Very high (160/100 mmHg or above),"No, and never had high blood sugar",ckd
+8,No swelling,Foamy urine or noticeable decrease in urine output,Rarely or never,Slightly elevated (120/80 – 139/89 mmHg),"No, and never had high blood sugar",ckd
+9,"Mild, occasional swelling",Foamy urine or noticeable decrease in urine output,"Occasionally, but not severe",Slightly elevated (120/80 – 139/89 mmHg),"Diagnosed diabetes, but controlled",ckd
+10,Severe swelling that affects daily activities,Slight increase in urination at night,"Frequently, making daily tasks harder",Very high (160/100 mmHg or above),"Diagnosed diabetes, but controlled",ckd
+11,"Frequent swelling, but manageable",Foamy urine or noticeable decrease in urine output,"Almost all the time, making normal activities difficult",High (140/90 – 159/99 mmHg),Borderline or prediabetic levels,ckd
+12,Severe swelling that affects daily activities,Very little or almost no urine output,"Occasionally, but not severe",Normal (Below 120/80 mmHg),"No, and never had high blood sugar",ckd
+13,"Frequent swelling, but manageable",Foamy urine or noticeable decrease in urine output,"Frequently, making daily tasks harder",Slightly elevated (120/80 – 139/89 mmHg),Uncontrolled diabetes with frequent high sugar readings,ckd
+14,Severe swelling that affects daily activities,Slight increase in urination at night,"Almost all the time, making normal activities difficult",Very high (160/100 mmHg or above),Borderline or prediabetic levels,ckd
+15,No swelling,Very little or almost no urine output,"Occasionally, but not severe",Normal (Below 120/80 mmHg),Borderline or prediabetic levels,ckd
+16,Severe swelling that affects daily activities,Foamy urine or noticeable decrease in urine output,"Frequently, making daily tasks harder",Very high (160/100 mmHg or above),Borderline or prediabetic levels,ckd
+17,No swelling,Foamy urine or noticeable decrease in urine output,"Frequently, making daily tasks harder",High (140/90 – 159/99 mmHg),Uncontrolled diabetes with frequent high sugar readings,ckd
+18,"Mild, occasional swelling",Very little or almost no urine output,Rarely or never,High (140/90 – 159/99 mmHg),Uncontrolled diabetes with frequent high sugar readings,ckd
+19,Severe swelling that affects daily activities,Slight increase in urination at night,"Frequently, making daily tasks harder",Very high (160/100 mmHg or above),Borderline or prediabetic levels,ckd
+20,No swelling,Foamy urine or noticeable decrease in urine output,"Almost all the time, making normal activities difficult",Very high (160/100 mmHg or above),"Diagnosed diabetes, but controlled",ckd
+21,Severe swelling that affects daily activities,Slight increase in urination at night,Rarely or never,High (140/90 – 159/99 mmHg),Borderline or prediabetic levels,ckd
+22,No swelling,No changes,Rarely or never,High (140/90 – 159/99 mmHg),"Diagnosed diabetes, but controlled",ckd
+23,"Frequent swelling, but manageable",Very little or almost no urine output,"Frequently, making daily tasks harder",Normal (Below 120/80 mmHg),Uncontrolled diabetes with frequent high sugar readings,ckd
+24,Severe swelling that affects daily activities,Slight increase in urination at night,"Almost all the time, making normal activities difficult",Slightly elevated (120/80 – 139/89 mmHg),Uncontrolled diabetes with frequent high sugar readings,ckd
+25,"Frequent swelling, but manageable",Very little or almost no urine output,"Occasionally, but not severe",High (140/90 – 159/99 mmHg),Borderline or prediabetic levels,ckd
+26,"Mild, occasional swelling",Foamy urine or noticeable decrease in urine output,"Almost all the time, making normal activities difficult",Normal (Below 120/80 mmHg),Uncontrolled diabetes with frequent high sugar readings,ckd
+27,No swelling,No changes,"Occasionally, but not severe",High (140/90 – 159/99 mmHg),"Diagnosed diabetes, but controlled",ckd
+28,"Mild, occasional swelling",Very little or almost no urine output,"Frequently, making daily tasks harder",Very high (160/100 mmHg or above),"No, and never had high blood sugar",ckd
+29,"Frequent swelling, but manageable",Slight increase in urination at night,"Frequently, making daily tasks harder",Normal (Below 120/80 mmHg),"No, and never had high blood sugar",ckd
+30,"Mild, occasional swelling",Very little or almost no urine output,"Frequently, making daily tasks harder",Normal (Below 120/80 mmHg),Uncontrolled diabetes with frequent high sugar readings,ckd
+31,Severe swelling that affects daily activities,Foamy urine or noticeable decrease in urine output,"Occasionally, but not severe",High (140/90 – 159/99 mmHg),Borderline or prediabetic levels,ckd
+32,"Frequent swelling, but manageable",No changes,"Occasionally, but not severe",Slightly elevated (120/80 – 139/89 mmHg),"No, and never had high blood sugar",ckd
+33,"Mild, occasional swelling",Slight increase in urination at night,Rarely or never,Very high (160/100 mmHg or above),Uncontrolled diabetes with frequent high sugar readings,ckd
+34,"Mild, occasional swelling",Slight increase in urination at night,"Almost all the time, making normal activities difficult",Slightly elevated (120/80 – 139/89 mmHg),Borderline or prediabetic levels,ckd
+35,"Frequent swelling, but manageable",Slight increase in urination at night,Rarely or never,Normal (Below 120/80 mmHg),Uncontrolled diabetes with frequent high sugar readings,ckd
+36,Severe swelling that affects daily activities,Foamy urine or noticeable decrease in urine output,"Almost all the time, making normal activities difficult",Normal (Below 120/80 mmHg),"Diagnosed diabetes, but controlled",ckd
+37,Severe swelling that affects daily activities,Foamy urine or noticeable decrease in urine output,"Occasionally, but not severe",Normal (Below 120/80 mmHg),"Diagnosed diabetes, but controlled",ckd
+38,"Mild, occasional swelling",Slight increase in urination at night,"Almost all the time, making normal activities difficult",Normal (Below 120/80 mmHg),Borderline or prediabetic levels,"ckd	"
+39,Severe swelling that affects daily activities,No changes,"Frequently, making daily tasks harder",High (140/90 – 159/99 mmHg),"Diagnosed diabetes, but controlled",ckd
+40,No swelling,No changes,"Almost all the time, making normal activities difficult",Very high (160/100 mmHg or above),Borderline or prediabetic levels,ckd
+41,Severe swelling that affects daily activities,Foamy urine or noticeable decrease in urine output,"Frequently, making daily tasks harder",Normal (Below 120/80 mmHg),"No, and never had high blood sugar",ckd
+42,"Mild, occasional swelling",Very little or almost no urine output,"Almost all the time, making normal activities difficult",High (140/90 – 159/99 mmHg),"No, and never had high blood sugar",ckd
+43,Severe swelling that affects daily activities,No changes,"Almost all the time, making normal activities difficult",Normal (Below 120/80 mmHg),Uncontrolled diabetes with frequent high sugar readings,ckd
+44,No swelling,Very little or almost no urine output,"Frequently, making daily tasks harder",Very high (160/100 mmHg or above),Uncontrolled diabetes with frequent high sugar readings,ckd
+45,No swelling,Slight increase in urination at night,Rarely or never,Very high (160/100 mmHg or above),"Diagnosed diabetes, but controlled",ckd
+46,Severe swelling that affects daily activities,No changes,"Almost all the time, making normal activities difficult",Very high (160/100 mmHg or above),Uncontrolled diabetes with frequent high sugar readings,ckd
+47,Severe swelling that affects daily activities,Foamy urine or noticeable decrease in urine output,"Occasionally, but not severe",Slightly elevated (120/80 – 139/89 mmHg),Uncontrolled diabetes with frequent high sugar readings,ckd
+48,"Frequent swelling, but manageable",No changes,"Almost all the time, making normal activities difficult",Slightly elevated (120/80 – 139/89 mmHg),"Diagnosed diabetes, but controlled",ckd
+49,Severe swelling that affects daily activities,Slight increase in urination at night,Rarely or never,Very high (160/100 mmHg or above),"Diagnosed diabetes, but controlled",ckd
+50,No swelling,Slight increase in urination at night,"Almost all the time, making normal activities difficult",High (140/90 – 159/99 mmHg),"Diagnosed diabetes, but controlled",ckd
+51,No swelling,Very little or almost no urine output,"Occasionally, but not severe",Very high (160/100 mmHg or above),Borderline or prediabetic levels,ckd
+52,"Frequent swelling, but manageable",Slight increase in urination at night,"Almost all the time, making normal activities difficult",High (140/90 – 159/99 mmHg),"No, and never had high blood sugar",ckd
+53,No swelling,Slight increase in urination at night,"Almost all the time, making normal activities difficult",Normal (Below 120/80 mmHg),Borderline or prediabetic levels,ckd
+54,"Mild, occasional swelling",Slight increase in urination at night,"Almost all the time, making normal activities difficult",Very high (160/100 mmHg or above),Borderline or prediabetic levels,ckd
+55,Severe swelling that affects daily activities,Slight increase in urination at night,Rarely or never,Normal (Below 120/80 mmHg),Borderline or prediabetic levels,ckd
+56,No swelling,No changes,"Frequently, making daily tasks harder",Very high (160/100 mmHg or above),"No, and never had high blood sugar",ckd
+57,"Frequent swelling, but manageable",Very little or almost no urine output,"Frequently, making daily tasks harder",Slightly elevated (120/80 – 139/89 mmHg),"No, and never had high blood sugar",ckd
+58,No swelling,Very little or almost no urine output,Rarely or never,High (140/90 – 159/99 mmHg),Borderline or prediabetic levels,ckd
+59,Severe swelling that affects daily activities,Very little or almost no urine output,"Occasionally, but not severe",High (140/90 – 159/99 mmHg),Borderline or prediabetic levels,ckd
+60,Severe swelling that affects daily activities,No changes,"Almost all the time, making normal activities difficult",High (140/90 – 159/99 mmHg),Uncontrolled diabetes with frequent high sugar readings,ckd
+61,Severe swelling that affects daily activities,Slight increase in urination at night,"Occasionally, but not severe",Normal (Below 120/80 mmHg),"No, and never had high blood sugar",ckd
+62,No swelling,Foamy urine or noticeable decrease in urine output,"Almost all the time, making normal activities difficult",High (140/90 – 159/99 mmHg),"Diagnosed diabetes, but controlled",ckd
+63,"Frequent swelling, but manageable",Foamy urine or noticeable decrease in urine output,Rarely or never,High (140/90 – 159/99 mmHg),Borderline or prediabetic levels,ckd
+64,"Frequent swelling, but manageable",No changes,"Almost all the time, making normal activities difficult",Normal (Below 120/80 mmHg),"Diagnosed diabetes, but controlled",ckd
+65,No swelling,Very little or almost no urine output,Rarely or never,Very high (160/100 mmHg or above),"Diagnosed diabetes, but controlled",ckd
+66,Severe swelling that affects daily activities,Foamy urine or noticeable decrease in urine output,"Almost all the time, making normal activities difficult",Very high (160/100 mmHg or above),"Diagnosed diabetes, but controlled",ckd
+67,Severe swelling that affects daily activities,Slight increase in urination at night,Rarely or never,Slightly elevated (120/80 – 139/89 mmHg),"Diagnosed diabetes, but controlled",ckd
+68,"Mild, occasional swelling",Slight increase in urination at night,Rarely or never,High (140/90 – 159/99 mmHg),"Diagnosed diabetes, but controlled",ckd
+69,Severe swelling that affects daily activities,Foamy urine or noticeable decrease in urine output,Rarely or never,Very high (160/100 mmHg or above),"No, and never had high blood sugar",ckd
+70,Severe swelling that affects daily activities,No changes,Rarely or never,Slightly elevated (120/80 – 139/89 mmHg),"Diagnosed diabetes, but controlled",ckd
+71,Severe swelling that affects daily activities,Slight increase in urination at night,"Almost all the time, making normal activities difficult",Normal (Below 120/80 mmHg),Uncontrolled diabetes with frequent high sugar readings,ckd
+72,"Mild, occasional swelling",No changes,Rarely or never,Very high (160/100 mmHg or above),Uncontrolled diabetes with frequent high sugar readings,ckd
+73,"Mild, occasional swelling",Foamy urine or noticeable decrease in urine output,Rarely or never,Very high (160/100 mmHg or above),Uncontrolled diabetes with frequent high sugar readings,ckd
+74,Severe swelling that affects daily activities,No changes,Rarely or never,Normal (Below 120/80 mmHg),"No, and never had high blood sugar",ckd
+75,"Mild, occasional swelling",Very little or almost no urine output,"Almost all the time, making normal activities difficult",High (140/90 – 159/99 mmHg),Borderline or prediabetic levels,ckd
+76,No swelling,Foamy urine or noticeable decrease in urine output,"Occasionally, but not severe",Normal (Below 120/80 mmHg),"Diagnosed diabetes, but controlled",ckd
+77,Severe swelling that affects daily activities,No changes,"Almost all the time, making normal activities difficult",Normal (Below 120/80 mmHg),"No, and never had high blood sugar",ckd
+78,Severe swelling that affects daily activities,Slight increase in urination at night,"Occasionally, but not severe",Slightly elevated (120/80 – 139/89 mmHg),Borderline or prediabetic levels,ckd
+79,"Mild, occasional swelling",Foamy urine or noticeable decrease in urine output,"Frequently, making daily tasks harder",Very high (160/100 mmHg or above),"No, and never had high blood sugar",ckd
+80,"Mild, occasional swelling",Foamy urine or noticeable decrease in urine output,"Occasionally, but not severe",High (140/90 – 159/99 mmHg),"No, and never had high blood sugar",ckd
+81,"Mild, occasional swelling",Foamy urine or noticeable decrease in urine output,"Almost all the time, making normal activities difficult",Normal (Below 120/80 mmHg),Borderline or prediabetic levels,ckd
+82,"Frequent swelling, but manageable",Slight increase in urination at night,"Frequently, making daily tasks harder",High (140/90 – 159/99 mmHg),Uncontrolled diabetes with frequent high sugar readings,ckd
+83,"Frequent swelling, but manageable",No changes,"Frequently, making daily tasks harder",Slightly elevated (120/80 – 139/89 mmHg),Borderline or prediabetic levels,ckd
+84,"Frequent swelling, but manageable",Foamy urine or noticeable decrease in urine output,"Almost all the time, making normal activities difficult",High (140/90 – 159/99 mmHg),"No, and never had high blood sugar",ckd
+85,No swelling,Very little or almost no urine output,"Occasionally, but not severe",Very high (160/100 mmHg or above),"No, and never had high blood sugar",ckd
+86,"Frequent swelling, but manageable",Foamy urine or noticeable decrease in urine output,Rarely or never,Normal (Below 120/80 mmHg),Borderline or prediabetic levels,ckd
+87,No swelling,Very little or almost no urine output,"Almost all the time, making normal activities difficult",High (140/90 – 159/99 mmHg),Uncontrolled diabetes with frequent high sugar readings,ckd
+88,No swelling,Very little or almost no urine output,"Occasionally, but not severe",High (140/90 – 159/99 mmHg),Uncontrolled diabetes with frequent high sugar readings,ckd
+89,"Mild, occasional swelling",Slight increase in urination at night,"Frequently, making daily tasks harder",Very high (160/100 mmHg or above),"Diagnosed diabetes, but controlled",ckd
+90,No swelling,No changes,Rarely or never,Normal (Below 120/80 mmHg),"Diagnosed diabetes, but controlled",ckd
+91,"Mild, occasional swelling",No changes,"Almost all the time, making normal activities difficult",Slightly elevated (120/80 – 139/89 mmHg),Borderline or prediabetic levels,ckd
+92,Severe swelling that affects daily activities,Slight increase in urination at night,"Occasionally, but not severe",Slightly elevated (120/80 – 139/89 mmHg),Uncontrolled diabetes with frequent high sugar readings,ckd
+93,No swelling,Very little or almost no urine output,"Almost all the time, making normal activities difficult",Normal (Below 120/80 mmHg),"Diagnosed diabetes, but controlled",ckd
+94,"Frequent swelling, but manageable",Foamy urine or noticeable decrease in urine output,"Occasionally, but not severe",Slightly elevated (120/80 – 139/89 mmHg),"Diagnosed diabetes, but controlled",ckd
+95,"Frequent swelling, but manageable",Slight increase in urination at night,"Almost all the time, making normal activities difficult",Slightly elevated (120/80 – 139/89 mmHg),"Diagnosed diabetes, but controlled",ckd
+96,"Frequent swelling, but manageable",Very little or almost no urine output,"Frequently, making daily tasks harder",Normal (Below 120/80 mmHg),"No, and never had high blood sugar",ckd
+97,"Mild, occasional swelling",Slight increase in urination at night,"Frequently, making daily tasks harder",Slightly elevated (120/80 – 139/89 mmHg),Uncontrolled diabetes with frequent high sugar readings,ckd
+98,"Frequent swelling, but manageable",Very little or almost no urine output,"Occasionally, but not severe",Very high (160/100 mmHg or above),Borderline or prediabetic levels,ckd
+99,"Frequent swelling, but manageable",Very little or almost no urine output,"Frequently, making daily tasks harder",Normal (Below 120/80 mmHg),"Diagnosed diabetes, but controlled",ckd
+100,No swelling,Very little or almost no urine output,"Frequently, making daily tasks harder",High (140/90 – 159/99 mmHg),"Diagnosed diabetes, but controlled",ckd
