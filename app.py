@@ -194,7 +194,7 @@ from sklearn.model_selection import train_test_split
 from sklearn.linear_model import LogisticRegression
 from sklearn.preprocessing import StandardScaler
 from flask_mail import Mail, Message
-
+from dotenv import load_dotenv
 
 app = Flask(__name__)
 
@@ -203,11 +203,17 @@ CORS(app)
 
 import os
 
+
+load_dotenv()
+
+# API_URL = os.getenv('REACT_APP_API_URL')
+# print("API URL:", API_URL)
+
 # SQLALCHEMY_DATABASE_URI = f"mysql+pymysql://ab6585_ckd:tNrGVGM@s2R4G6V@MYSQL1001.site4now.net/ckd_platform"
 # SQLALCHEMY_TRACK_MODIFICATIONS = False
 # Configure the app to use SQLAlchemy
-app.config['SQLALCHEMY_DATABASE_URI'] = 'mysql+pymysql://root:@localhost/ckd_platform'
-# app.config['SQLALCHEMY_DATABASE_URI'] = 'mysql+pymysql://ab6585_ckd:tNrGVGM@s2R4G6V@MYSQL1001.site4now.net/ckd_platform'
+# app.config['SQLALCHEMY_DATABASE_URI'] = 'mysql+pymysql://root:@localhost/ckd_platform'
+app.config['SQLALCHEMY_DATABASE_URI'] = 'mysql://root:eXgKVnOjDHEYyIssOZoVoofWDBdnOTOm@metro.proxy.rlwy.net:56798/ckd_platform'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 db = SQLAlchemy(app)
 
@@ -335,20 +341,36 @@ class Assessment(db.Model):
 #     print("✅ CKD Model Loaded Successfully!")
 
 # Establish database connection
+# def get_db_connection():
+#     try:
+#         connection = pymysql.connect(
+#             host="localhost",
+#             user="root",
+#             password="",
+#             database="ckd_platform",
+#             cursorclass=pymysql.cursors.DictCursor  # Ensures results are returned as dictionaries
+#         )
+#         return connection
+#     except pymysql.MySQLError as err:
+#         print(f"Database connection error: {err}")
+#         return None
+
+import os
+import pymysql
+
 def get_db_connection():
     try:
         connection = pymysql.connect(
-            host="localhost",
-            user="root",
-            password="",
-            database="ckd_platform",
-            cursorclass=pymysql.cursors.DictCursor  # Ensures results are returned as dictionaries
+            host=os.getenv("DB_HOST"),  # Use environment variables
+            user=os.getenv("DB_USER"),
+            password=os.getenv("DB_PASSWORD"),
+            database=os.getenv("DB_NAME"),
+            cursorclass=pymysql.cursors.DictCursor
         )
         return connection
     except pymysql.MySQLError as err:
         print(f"Database connection error: {err}")
         return None
-
 # Routes
 @app.route("/")
 def home():
@@ -828,7 +850,7 @@ app.config['MAIL_DEFAULT_SENDER'] = 'iahmad9963@gmail.com'
 
 mail = Mail(app)
 
-@app.route('/send-email', methods=['POST'])
+@app.route('/api/send-email', methods=['POST'])
 def send_email():
     try:
         data = request.get_json()
