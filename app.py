@@ -359,19 +359,45 @@ class Assessment(db.Model):
 import os
 import pymysql
 
+import psycopg2
+from urllib.parse import urlparse
+
 def get_db_connection():
     try:
-        connection = pymysql.connect(
-            host="dpg-cvbcd5in91rc739ff960-a.oregon-postgres.render.com",  # Direct host
-            user="root",  # Direct user
-            password="cWAJedzCGO1plS1a6XDEbnTAQSvfcG66",  # Direct password
-            database="ckd_platform",  # Direct database name
-            cursorclass=pymysql.cursors.DictCursor
+        # Get DATABASE_URL from environment variables
+        database_url = os.getenv("DATABASE_URL")
+
+        if not database_url:
+            raise ValueError("DATABASE_URL not set in environment variables")
+
+        # Parse the database URL
+        parsed_url = urlparse(database_url)
+
+        db_host = parsed_url.hostname
+        db_port = parsed_url.port or 5432  # Default PostgreSQL port
+        db_user = parsed_url.username
+        db_password = parsed_url.password
+        db_name = parsed_url.path.lstrip("/")  # Remove leading '/'
+
+        # Connect to PostgreSQL
+        connection = psycopg2.connect(
+            host=db_host,
+            port=db_port,
+            user=db_user,
+            password=db_password,
+            dbname=db_name
         )
+
+        print("✅ PostgreSQL connection successful")
         return connection
-    except pymysql.MySQLError as err:
-        print(f"Database connection error: {err}")
+
+    except psycopg2.Error as err:
+        print(f"❌ Database connection error: {err}")
         return None
+    except ValueError as ve:
+        print(f"❌ Configuration error: {ve}")
+        return None
+
 # Routes
 @app.route("/")
 def home():
