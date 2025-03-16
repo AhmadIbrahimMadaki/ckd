@@ -214,7 +214,7 @@ load_dotenv()
 # Configure the app to use SQLAlchemy
 # app.config['SQLALCHEMY_DATABASE_URI'] = 'mysql+pymysql://root:@localhost/ckd_platform'
 
-app.config['SQLALCHEMY_DATABASE_URI'] = 'mysql://root:eXgKVnOjDHEYyIssOZoVoofWDBdnOTOm@mysql.railway.internal:3306/ckd_platform'
+app.config['SQLALCHEMY_DATABASE_URI'] = 'mysql://root:eXgKVnOjDHEYyIssOZoVoofWDBdnOTOm@metro.proxy.rlwy.net:3306/ckd_platform'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 db = SQLAlchemy(app)
 
