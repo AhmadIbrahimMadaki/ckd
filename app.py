@@ -362,10 +362,10 @@ import pymysql
 def get_db_connection():
     try:
         connection = pymysql.connect(
-            host=os.getenv("DB_HOST"),  # Use environment variables
-            user=os.getenv("DB_USER"),
-            password=os.getenv("DB_PASSWORD"),
-            database=os.getenv("DB_NAME"),
+            host="dpg-cvbcd5in91rc739ff960-a",  # Direct host
+            user="root",  # Direct user
+            password="cWAJedzCGO1plS1a6XDEbnTAQSvfcG66",  # Direct password
+            database="ckd_platform",  # Direct database name
             cursorclass=pymysql.cursors.DictCursor
         )
         return connection
