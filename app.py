@@ -218,7 +218,6 @@ app.config['SQLALCHEMY_DATABASE_URI'] = 'postgresql://root:cWAJedzCGO1plS1a6XDEb
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 db = SQLAlchemy(app)
 
-
 # Models
 class User(db.Model):
     __tablename__ = 'users'
@@ -359,18 +358,14 @@ class Assessment(db.Model):
 
 import os
 import pymysql
-from urllib.parse import urlparse
 
 def get_db_connection():
     try:
-        db_url = "postgresql://root:cWAJedzCGO1plS1a6XDEbnTAQSvfcG66@dpg-cvbcd5in91rc739ff960-a.oregon-postgres.render.com/ckd_platform"
-        parsed = urlparse(db_url)
         connection = pymysql.connect(
-            host=parsed.hostname,
-            user=parsed.username,
-            password=parsed.password,
-            database=parsed.path.lstrip('/'),
-            port=parsed.port,
+            host="dpg-cvbcd5in91rc739ff960-a.oregon-postgres.render.com",  # Direct host
+            user="root",  # Direct user
+            password="cWAJedzCGO1plS1a6XDEbnTAQSvfcG66",  # Direct password
+            database="ckd_platform",  # Direct database name
             cursorclass=pymysql.cursors.DictCursor
         )
         return connection
