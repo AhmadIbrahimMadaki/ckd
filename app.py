@@ -1,185 +1,3 @@
-# from django import db
-# from flask import Flask, request, jsonify
-# from flask_cors import CORS
-# import pymysql
-
-# from Backend.models import Assessment, Patient
-
-# app = Flask(__name__)
-# CORS(app)
-
-# # Establish database connection
-# def get_db_connection():
-#     try:
-#         connection = pymysql.connect(
-#             host="localhost",
-#             user="root",
-#             password="",
-#             database="ckd_platform",
-#             cursorclass=pymysql.cursors.DictCursor  # Ensures results are returned as dictionaries
-#         )
-#         return connection
-#     except pymysql.MySQLError as err:
-#         print(f"Database connection error: {err}")
-#         return None
-
-# @app.route("/")
-# def home():
-#     return "Server is running!"
-
-# @app.route('/api/register', methods=['POST'])
-# def register():
-#     db = get_db_connection()
-#     if not db:
-#         return jsonify({"message": "Failed to connect to the database"}), 500
-
-#     try:
-#         cursor = db.cursor()
-#         data = request.get_json()
-
-#         full_name = data.get('fullName')
-#         email = data.get('email')
-#         password = data.get('password')
-#         user_type = data.get('userType')
-
-#         # Validate input
-#         if not all([full_name, email, password, user_type]):
-#             return jsonify({"message": "All fields are required"}), 400
-
-#         # Insert query
-#         query = """
-#             INSERT INTO users (full_name, email, password, user_type)
-#             VALUES (%s, %s, %s, %s)
-#         """
-#         cursor.execute(query, (full_name, email, password, user_type))
-#         db.commit()
-#         return jsonify({"message": "Registration successful"}), 201
-#     except Exception as e:
-#         return jsonify({"message": f"An error occurred: {str(e)}"}), 500
-#     finally:
-#         db.close()
-
-# @app.route('/api/login', methods=['POST'])
-# def login():
-#     db = get_db_connection()
-#     if not db:
-#         return jsonify({"message": "Failed to connect to the database"}), 500
-
-#     try:
-#         cursor = db.cursor()
-#         data = request.get_json()
-
-#         email = data.get('email')
-#         password = data.get('password')
-
-#         if not email or not password:
-#             return jsonify({"message": "Email and password are required"}), 400
-
-#         query = "SELECT * FROM users WHERE email = %s"
-#         cursor.execute(query, (email,))
-#         user = cursor.fetchone()
-
-#         # Debugging
-#         # print(f"User query result: {user}")  # Debugging line
-
-#         if user and user['password'] == password:  # Assuming password is at index 3
-#             return jsonify({"message": "Login successful"}), 200
-#         else:
-#             return jsonify({"message": "Invalid email or password"}), 401
-#     except Exception as e:
-#         print(f"An error occurred: {e}")  # Debugging line
-#         return jsonify({"message": f"An error occurred: {str(e)}"}), 500
-#     finally:
-#         db.close()
-        
-# @app.route('/api/patient/profile', methods=['GET'])
-# def get_patient_profile():
-#     email = request.args.get('email')
-#     db = get_db_connection()
-#     if not db:
-#         return jsonify({"message": "Failed to connect to the database"}), 500
-
-#     try:
-#         cursor = db.cursor(dictionary=True)
-#         query = "SELECT id, full_name, email, diagnosed FROM users WHERE email = %s"
-#         cursor.execute(query, (email,))
-#         user = cursor.fetchone()
-
-#         if user:
-#             if user['diagnosed']:
-#                 return jsonify({"message": "Access to clinical history", "diagnosed": True}), 200
-#             else:
-#                 return jsonify({"message": "Access to previous assessments", "diagnosed": False}), 200
-#         else:
-#             return jsonify({"message": "User not found"}), 404
-#     except Exception as e:
-#         return jsonify({"message": f"An error occurred: {str(e)}"}), 500
-#     finally:
-#         db.close()
-
-# @app.route('/api/clinical-history', methods=['GET'])
-# def get_clinical_history():
-#     email = request.args.get('email')
-#     # Fetch clinical history from the database for the patient
-#     patient = Patient.query.filter_by(email=email).first()
-    
-#     if not patient:
-#         return jsonify({"message": "Patient not found"}), 404
-    
-#     if not patient.diagnosed:
-#         return jsonify({"message": "Patient is not diagnosed"}), 400
-    
-#     # Assuming clinical history is a field in the patient model or a related model
-#     clinical_history = patient.clinical_history  # Or use a related table to fetch clinical history
-#     return jsonify({"history": clinical_history}), 200
-
-# @app.route('/api/previous-assessments', methods=['GET'])
-# def get_previous_assessments():
-#     email = request.args.get('email')
-#     # Fetch previous assessments for the patient
-#     patient = Patient.query.filter_by(email=email).first()
-
-#     if not patient:
-#         return jsonify({"message": "Patient not found"}), 404
-
-#     if patient.diagnosed:
-#         return jsonify({"message": "Patient is diagnosed"}), 400
-    
-#     # Assuming previous assessments are stored in a separate model or table
-#     assessments = Assessment.query.filter_by(patient_id=patient.id).all()
-#     assessments_data = [{"date": assessment.date, "details": assessment.details} for assessment in assessments]
-
-#     return jsonify({"assessments": assessments_data}), 200
-
-# @app.route('/api/update-clinical-history', methods=['POST'])
-# def update_clinical_history():
-#     data = request.get_json()
-#     email = data.get('email')
-#     history = data.get('history')
-
-#     if not email or not history:
-#         return jsonify({"message": "Missing required fields"}), 400
-
-#     patient = Patient.query.filter_by(email=email).first()
-
-#     if not patient:
-#         return jsonify({"message": "Patient not found"}), 404
-
-#     if not patient.diagnosed:
-#         return jsonify({"message": "Patient is not diagnosed"}), 400
-
-#     # Update the clinical history for the patient
-#     patient.clinical_history = history
-#     db.session.commit()
-
-#     return jsonify({"message": "Clinical history updated successfully"}), 200
-
-
-# if __name__ == '__main__':
-#     app.run(debug=True)
-
-
-
 from datetime import datetime
 from flask import Flask, request, jsonify
 from flask_sqlalchemy import SQLAlchemy
@@ -195,6 +13,7 @@ import numpy as np
 # from sklearn.preprocessing import StandardScaler
 from flask_mail import Mail, Message
 from dotenv import load_dotenv
+from werkzeug.security import generate_password_hash
 
 app = Flask(__name__)
 
@@ -212,9 +31,9 @@ load_dotenv()
 # SQLALCHEMY_DATABASE_URI = f"mysql+pymysql://ab6585_ckd:tNrGVGM@s2R4G6V@MYSQL1001.site4now.net/ckd_platform"
 # SQLALCHEMY_TRACK_MODIFICATIONS = False
 # Configure the app to use SQLAlchemy
-# app.config['SQLALCHEMY_DATABASE_URI'] = 'mysql+pymysql://root:@localhost/ckd_platform'
+app.config['SQLALCHEMY_DATABASE_URI'] = 'mysql+pymysql://root:@localhost/ckd_platform'
 
-app.config['SQLALCHEMY_DATABASE_URI'] = 'postgresql://root:cWAJedzCGO1plS1a6XDEbnTAQSvfcG66@dpg-cvbcd5in91rc739ff960-a.oregon-postgres.render.com/ckd_platform'
+# app.config['SQLALCHEMY_DATABASE_URI'] = 'postgresql://root:cWAJedzCGO1plS1a6XDEbnTAQSvfcG66@dpg-cvbcd5in91rc739ff960-a.oregon-postgres.render.com/ckd_platform'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 db = SQLAlchemy(app)
 
@@ -241,13 +60,6 @@ class Patient(db.Model):
     
     
 
-# class Assessment(db.Model):
-#     __tablename__ = 'assessments'
-#     id = db.Column(db.Integer, primary_key=True)
-#     date = db.Column(db.Date, nullable=False)
-#     details = db.Column(db.Text, nullable=False)
-#     patient_id = db.Column(db.Integer, db.ForeignKey('patients.id'), nullable=False)
-#     patient = db.relationship('Patient', backref=db.backref('assessments', lazy=True))
 class Assessment(db.Model):
     __tablename__ = 'assessments'
 
@@ -277,85 +89,7 @@ class Assessment(db.Model):
             "updated_at": self.updated_at
         }
     
-    # ---------------------- Train Model When Server Starts ----------------------
-# def train_model():
-#     """Train a CKD prediction model at server startup."""
-#     # Load training data from the database (Example: Fetch past assessments)
-#     assessments = Assessment.query.filter_by(is_draft=False).all()
-    
-#     if not assessments:
-#         print("No training data available. Model training skipped.")
-#         return None, None  # No model if no data
-
-#     # Convert responses to DataFrame
-#     data = pd.DataFrame([a.responses for a in assessments])
-#     data["risk_score"] = [a.risk_score for a in assessments]
-
-#     # Define features and target
-#     X = data.drop(columns=["risk_score"])
-#     y = data["risk_score"]
-
-#     # One-hot encode categorical variables
-#     X = pd.get_dummies(X, drop_first=True)
-
-#     # Train-test split
-#     X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
-
-#     # Standardization
-#     scaler = StandardScaler()
-#     X_train_scaled = scaler.fit_transform(X_train)
-
-#     # Train model
-#     model = LogisticRegression()
-#     model.fit(X_train_scaled, y_train)
-
-#     print("✅ Model trained successfully at startup!")
-#     return model, scaler
-
-# import pickle
-# import joblib
-
-# def load_model():
-#     model_path = "ckd_model.pkl"
-    
-#     # Check if file exists
-#     if not os.path.exists(model_path):
-#         print(f"❌ Model file not found: {model_path}")
-#         return None
-    
-#     try:
-#         with open(model_path, "rb") as model_file:
-#             model = joblib.load(model_file)
-#         print("✅ Model loaded successfully!")  # Debugging message
-#         return model
-#     except Exception as e:
-#         print(f"❌ Error loading model: {e}")
-#         return None
-
-# # scaler = joblib.load("scaler.pkl") 
-# # Load model at startup
-# ckd_model = load_model()
-
-# if ckd_model is None:
-#     print("❌ Model Loading Failed!")
-# else:
-#     print("✅ CKD Model Loaded Successfully!")
-
-# Establish database connection
-# def get_db_connection():
-#     try:
-#         connection = pymysql.connect(
-#             host="localhost",
-#             user="root",
-#             password="",
-#             database="ckd_platform",
-#             cursorclass=pymysql.cursors.DictCursor  # Ensures results are returned as dictionaries
-#         )
-#         return connection
-#     except pymysql.MySQLError as err:
-#         print(f"Database connection error: {err}")
-#         return None
-
+   
 import os
 import pymysql
 
@@ -366,17 +100,31 @@ import psycopg2.extras
 
 def get_db_connection():
     try:
-        connection = psycopg2.connect(
-            host="dpg-cvbcd5in91rc739ff960-a.oregon-postgres.render.com",
+        connection = pymysql.connect(
+            host="localhost",
             user="root",
-            password="cWAJedzCGO1plS1a6XDEbnTAQSvfcG66",
+            password="",
             database="ckd_platform",
-            cursor_factory=psycopg2.extras.DictCursor  # ✅ Enables dictionary access
+            cursorclass=pymysql.cursors.DictCursor  # Ensures results are returned as dictionaries
         )
         return connection
-    except psycopg2.Error as err:
+    except pymysql.MySQLError as err:
         print(f"Database connection error: {err}")
         return None
+
+# def get_db_connection():
+#     try:
+#         connection = psycopg2.connect(
+#             host="dpg-cvbcd5in91rc739ff960-a.oregon-postgres.render.com",
+#             user="root",
+#             password="cWAJedzCGO1plS1a6XDEbnTAQSvfcG66",
+#             database="ckd_platform",
+#             cursor_factory=psycopg2.extras.DictCursor  # ✅ Enables dictionary access
+#         )
+#         return connection
+#     except psycopg2.Error as err:
+#         print(f"Database connection error: {err}")
+#         return None
     # print("✅ PostgreSQL connection successful")
     #     return connection
 
@@ -821,7 +569,7 @@ def get_stats():
 @app.route("/api/admin/users", methods=["GET"])
 def get_users():
     users = User.query.all()
-    user_list = [{"id": user.id, "full_name": user.full_name, "email": user.email} for user in users]
+    user_list = [{"id": user.id, "full_name": user.full_name, "email": user.email, "user_type": user.user_type} for user in users]
     return jsonify(user_list)
 
 @app.route("/api/admin/users/<int:user_id>", methods=["DELETE"])
@@ -829,10 +577,16 @@ def delete_user(user_id):
     user = User.query.get(user_id)
     if not user:
         return jsonify({"message": "User not found"}), 404
-    
+
+    # Delete all assessments for each patient linked to the user
+    for patient in user.patients:
+        for assessment in patient.assessments:
+            db.session.delete(assessment)
+        db.session.delete(patient)
+
     db.session.delete(user)
     db.session.commit()
-    return jsonify({"message": "User deleted successfully"}), 200
+    return jsonify({"message": "User and related records deleted successfully"}), 200
 
 @app.route("/api/admin/users", methods=["POST"])
 def add_user():
@@ -842,6 +596,7 @@ def add_user():
     db.session.commit()
     return jsonify({"message": "User added successfully", "id": new_user.id}), 201
 
+
 @app.route("/api/admin/users/<int:user_id>", methods=["PUT"])
 def update_user(user_id):
     data = request.get_json()
@@ -849,11 +604,18 @@ def update_user(user_id):
     if not user:
         return jsonify({"message": "User not found"}), 404
     
-    user.full_name = data["full_name"]
-    user.email = data["email"]
-    user.user_type = data["user_type"]
+    user.full_name = data.get("full_name", user.full_name)
+    user.email = data.get("email", user.email)
+    user.user_type = data.get("user_type", user.user_type)
+    
+    # Only update password if provided
+    if "password" in data and data["password"]:
+        hashed_password = generate_password_hash(data["password"])
+        user.password = hashed_password
+
     db.session.commit()
     return jsonify({"message": "User updated successfully"}), 200
+
 
 # Configure Flask-Mail
 app.config['MAIL_SERVER'] = 'smtp.gmail.com'
