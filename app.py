@@ -31,9 +31,9 @@ load_dotenv()
 # SQLALCHEMY_DATABASE_URI = f"mysql+pymysql://ab6585_ckd:tNrGVGM@s2R4G6V@MYSQL1001.site4now.net/ckd_platform"
 # SQLALCHEMY_TRACK_MODIFICATIONS = False
 # Configure the app to use SQLAlchemy
-# app.config['SQLALCHEMY_DATABASE_URI'] = 'mysql+pymysql://root:@localhost/ckd_platform'
+app.config['SQLALCHEMY_DATABASE_URI'] = 'mysql+pymysql://root:@localhost/ckd_platform'
 
-app.config['SQLALCHEMY_DATABASE_URI'] = 'postgresql://root:cWAJedzCGO1plS1a6XDEbnTAQSvfcG66@dpg-cvbcd5in91rc739ff960-a.oregon-postgres.render.com/ckd_platform'
+# app.config['SQLALCHEMY_DATABASE_URI'] = 'postgresql://root:cWAJedzCGO1plS1a6XDEbnTAQSvfcG66@dpg-cvbcd5in91rc739ff960-a.oregon-postgres.render.com/ckd_platform'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 db = SQLAlchemy(app)
 
@@ -70,6 +70,7 @@ class Assessment(db.Model):
     risk_score = db.Column(db.Float, nullable=True)  # CKD risk score
     risk_category = db.Column(db.String(50), nullable=True)  # "Red", "Yellow", or "Green"
     recommendations = db.Column(db.Text, nullable=True)  # AI-generated recommendations
+    medicines = db.Column(db.JSON, nullable=True) 
     created_at = db.Column(db.DateTime, default=datetime.now, nullable=False)
     updated_at = db.Column(db.DateTime, default=datetime.now, onupdate=datetime.now, nullable=False)
 
@@ -85,11 +86,45 @@ class Assessment(db.Model):
             "risk_score": self.risk_score,
             "risk_category": self.risk_category,
             "recommendations": self.recommendations,
+            "medicines": self.medicines,
             "created_at": self.created_at,
             "updated_at": self.updated_at
         }
-    
-   
+
+# class Medicine(db.Model):
+#     __tablename__ = "medicines"
+#     id = db.Column(db.Integer, primary_key=True)
+#     name = db.Column(db.String(255), nullable=False)
+#     description = db.Column(db.Text, nullable=True)
+#     dosage = db.Column(db.String(100), nullable=False)
+#     frequency = db.Column(db.String(100), nullable=False)
+#     created_at = db.Column(db.DateTime, default=datetime.now)
+
+
+class Prescription(db.Model):
+    __tablename__ = 'prescriptions'
+    id = db.Column(db.Integer, primary_key=True, autoincrement=True)
+    patient_id = db.Column(db.Integer, db.ForeignKey('patients.id'), nullable=False)
+    assessment_id = db.Column(db.Integer, db.ForeignKey('assessments.id'), nullable=False)
+    medicine_name = db.Column(db.String(255), nullable=False)
+    dosage = db.Column(db.String(100), nullable=False)
+    frequency = db.Column(db.String(100), nullable=False)
+    created_at = db.Column(db.DateTime, default=datetime.now, nullable=False)
+
+    # Relationships
+    patient = db.relationship('Patient', backref=db.backref('prescriptions', lazy=True))
+    assessment = db.relationship('Assessment', backref=db.backref('prescriptions', lazy=True))       
+
+class Order(db.Model):
+    __tablename__ = 'orders'
+    id = db.Column(db.Integer, primary_key=True, autoincrement=True)
+    patient_id = db.Column(db.Integer, db.ForeignKey('patients.id'), nullable=False)
+    medicines = db.Column(db.JSON, nullable=False)  # store ordered meds
+    status = db.Column(db.String(50), default="pending")  # pending, approved, delivered
+    created_at = db.Column(db.DateTime, default=datetime.now, nullable=False)
+
+    patient = db.relationship('Patient', backref=db.backref('orders', lazy=True))
+     
 import os
 import pymysql
 
@@ -134,6 +169,52 @@ def get_db_connection():
     # except ValueError as ve:
     #     print(f"❌ Configuration error: {ve}")
     #     return None
+    
+
+from werkzeug.security import generate_password_hash
+
+def create_default_admin():
+    admin_email = "admin@gmail.com"
+    existing_admin = User.query.filter_by(email=admin_email).first()
+    
+    if not existing_admin:
+        admin = User(
+            full_name="System Administrator",
+            email=admin_email,
+            password=generate_password_hash("123admin123"),  # secure password hash
+            user_type="admin",
+            diagnosis_status="N/A"
+        )
+        db.session.add(admin)
+        db.session.commit()
+        print("✅ Default admin user created successfully!")
+    else:
+        print("ℹ️ Default admin already exists.")
+
+
+
+def generate_medicines(risk_category):
+    if "Red" in risk_category:
+        return [
+            {"name": "Losartan", "dosage": "50mg", "frequency": "1 tablet daily"},
+            {"name": "Furosemide", "dosage": "40mg", "frequency": "1 tablet in the morning"}
+        ]
+    elif "Orange" in risk_category:
+        return [
+            {"name": "Amlodipine", "dosage": "10mg", "frequency": "1 tablet daily"},
+            {"name": "Lisinopril", "dosage": "20mg", "frequency": "1 tablet daily"}
+        ]
+    elif "Yellow" in risk_category:
+        return [
+            {"name": "Hydrochlorothiazide", "dosage": "25mg", "frequency": "1 tablet daily"}
+        ]
+    elif "Light Green" in risk_category:
+        return [
+            {"name": "Vitamin D", "dosage": "1000 IU", "frequency": "1 daily"}
+        ]
+    else:
+        return []
+
 
 # Routes
 @app.route("/")
@@ -412,22 +493,35 @@ def save_or_predict_assessment():
         if 81 <= severity_percentage <= 100:
             risk_category = "Red (Very High Risk)"
             recommendations = "Advanced CKD detected. Urgent nephrologist visit required."
+            medicines = generate_medicines(risk_category)
+
         elif 61 <= severity_percentage < 81:
             risk_category = "Orange (High Risk)"
+            medicines = generate_medicines(risk_category)
+
             recommendations = "Likely CKD progression. Consult a specialist."
         elif 41 <= severity_percentage < 61:
             risk_category = "Yellow (Moderate Risk)"
+            medicines = generate_medicines(risk_category)
+
             recommendations = "Potential CKD detected. A medical check-up is recommended."
         elif 21 <= severity_percentage < 41:
             risk_category = "Light Green (Mild Risk)"
             recommendations = "Early CKD signs detected. Lifestyle adjustments needed."
+            medicines = generate_medicines(risk_category)
+
         elif 0 <= severity_percentage < 21:
             risk_category = "Green (Low Risk)"
             recommendations = "No significant CKD symptoms. Maintain a healthy lifestyle."
+            medicines = generate_medicines(risk_category)
+
         else:
             risk_category = "Unknown"
             recommendations = "Invalid severity percentage value."
+            medicines = generate_medicines(risk_category)
 
+
+            
         # **4️⃣ Assign Diagnosis Status Based on Risk**
         if patient.diagnosis_status == "undiagnosed" and severity_percentage < 40:
             patient.diagnosis_status = "diagnosed"
@@ -438,22 +532,67 @@ def save_or_predict_assessment():
 
         # **4️⃣ Update or Save the Assessment**
         existing_assessment = session.query(Assessment).filter_by(patient_id=patient_id).first()
+
         if existing_assessment:
+            # ✅ Update assessment
             existing_assessment.responses = responses
             existing_assessment.risk_score = severity_percentage
             existing_assessment.risk_category = risk_category
             existing_assessment.recommendations = recommendations
+            existing_assessment.medicines = medicines
             existing_assessment.updated_at = datetime.now()
             existing_assessment.is_draft = False
             session.commit()
+
+            # ✅ Prescription handling
+            # Convert new medicines to a dict for quick lookup
+            new_meds_dict = {med["name"]: med for med in medicines}
+
+            # Get all existing prescriptions for this assessment
+            existing_prescriptions = session.query(Prescription).filter_by(
+                patient_id=patient_id,
+                assessment_id=existing_assessment.id
+            ).all()
+
+            # Update or delete old prescriptions
+            for prescription in existing_prescriptions:
+                if prescription.medicine_name in new_meds_dict:
+                    # ✅ Update existing prescription
+                    med = new_meds_dict[prescription.medicine_name]
+                    prescription.dosage = med["dosage"]
+                    prescription.frequency = med["frequency"]
+                    prescription.created_at = datetime.now()
+                    # remove it from dict so we don’t add it again
+                    del new_meds_dict[prescription.medicine_name]
+                else:
+                    # ❌ Delete prescriptions not in new list
+                    session.delete(prescription)
+
+            # Add any remaining new prescriptions
+            for med in new_meds_dict.values():
+                prescription = Prescription(
+                    patient_id=patient_id,
+                    assessment_id=existing_assessment.id,
+                    medicine_name=med["name"],
+                    dosage=med["dosage"],
+                    frequency=med["frequency"],
+                    created_at=datetime.now()
+                )
+                session.add(prescription)
+
+            session.commit()
+
             return jsonify({
                 "message": "Assessment updated successfully!",
                 "risk_score": severity_percentage,
                 "risk_category": risk_category,
                 "recommendations": recommendations,
+                "medicines": medicines,
                 "redirect_to_dashboard": is_undiagnosed
             }), 200
 
+
+        # ✅ Create new assessment
         new_assessment = Assessment(
             patient_id=patient_id,
             responses=responses,
@@ -461,10 +600,26 @@ def save_or_predict_assessment():
             risk_score=severity_percentage,
             risk_category=risk_category,
             recommendations=recommendations,
+            medicines=medicines,
             created_at=datetime.now(),
             updated_at=datetime.now()
         )
         session.add(new_assessment)
+        session.commit()
+        session.refresh(new_assessment)
+
+        # Save prescriptions in DB linked to new_assessment
+        for med in medicines:
+            prescription = Prescription(
+                patient_id=patient_id,
+                assessment_id=new_assessment.id,
+                medicine_name=med["name"],
+                dosage=med["dosage"],
+                frequency=med["frequency"],
+                created_at=datetime.now()
+            )
+            session.add(prescription)
+
         session.commit()
 
         return jsonify({
@@ -472,8 +627,10 @@ def save_or_predict_assessment():
             "risk_score": severity_percentage,
             "risk_category": risk_category,
             "recommendations": recommendations,
+            "medicines": medicines,
             "redirect_to_dashboard": is_undiagnosed
         }), 200
+
 
     except Exception as e:
         print(f"Error: {str(e)}")
@@ -502,6 +659,40 @@ def get_draft(patient_id):
         return jsonify({"formData": draft.responses}), 200
     except Exception as e:
         return jsonify({"message": "Error retrieving draft"}), 500
+
+# Fetch prescriptions for a patient
+@app.route("/api/prescriptions/<int:patient_id>", methods=["GET"])
+def get_prescriptions(patient_id):
+    prescriptions = Prescription.query.filter_by(patient_id=patient_id).all()
+    if not prescriptions:
+        return jsonify({"message": "No prescriptions found"}), 404
+    
+    prescription_list = [
+        {
+            "medicine_name": p.medicine_name,
+            "dosage": p.dosage,
+            "frequency": p.frequency,
+            "created_at": p.created_at.strftime("%Y-%m-%d")
+        }
+        for p in prescriptions
+    ]
+    return jsonify(prescription_list), 200
+
+# Place an order
+@app.route("/api/orders", methods=["POST"])
+def create_order():
+    data = request.get_json()
+    patient_id = data.get("patientId")
+    medicines = data.get("medicines")
+
+    if not patient_id or not medicines:
+        return jsonify({"message": "Patient ID and medicines are required"}), 400
+
+    order = Order(patient_id=patient_id, medicines=medicines, status="pending")
+    db.session.add(order)
+    db.session.commit()
+
+    return jsonify({"message": "Order placed successfully", "order_id": order.id}), 201
 
     
 # @app.route('/api/patient/<int:user_id>', methods=['GET'])
@@ -665,6 +856,7 @@ def send_email():
 with app.app_context():
     db.create_all()
     print("Tables created successfully!")
+    create_default_admin()
 
 # Run the Flask server
 if __name__ == '__main__':
