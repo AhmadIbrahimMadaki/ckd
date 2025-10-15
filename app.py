@@ -31,9 +31,9 @@ load_dotenv()
 # SQLALCHEMY_DATABASE_URI = f"mysql+pymysql://ab6585_ckd:tNrGVGM@s2R4G6V@MYSQL1001.site4now.net/ckd_platform"
 # SQLALCHEMY_TRACK_MODIFICATIONS = False
 # Configure the app to use SQLAlchemy
-app.config['SQLALCHEMY_DATABASE_URI'] = 'mysql+pymysql://root:@localhost/ckd_platform'
+# app.config['SQLALCHEMY_DATABASE_URI'] = 'mysql+pymysql://root:@localhost/ckd_platform'
 
-# app.config['SQLALCHEMY_DATABASE_URI'] = 'postgresql://root:cWAJedzCGO1plS1a6XDEbnTAQSvfcG66@dpg-cvbcd5in91rc739ff960-a.oregon-postgres.render.com/ckd_platform'
+app.config['SQLALCHEMY_DATABASE_URI'] = 'postgresql://root:cWAJedzCGO1plS1a6XDEbnTAQSvfcG66@dpg-cvbcd5in91rc739ff960-a.oregon-postgres.render.com/ckd_platform'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 db = SQLAlchemy(app)
 
@@ -859,8 +859,8 @@ with app.app_context():
     create_default_admin()
 
 # Run the Flask server
-if __name__ == '__main__':
-    app.run(debug=True)
-# if __name__ == "__main__":
-#     port = int(os.environ.get("PORT", 10000))  # Render assigns a dynamic port
-#     app.run(host="0.0.0.0", port=port, debug=True)
+# if __name__ == '__main__':
+#     app.run(debug=True)
+if __name__ == "__main__":
+    port = int(os.environ.get("PORT", 10000))  # Render assigns a dynamic port
+    app.run(host="0.0.0.0", port=port, debug=True)
