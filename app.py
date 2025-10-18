@@ -33,10 +33,23 @@ load_dotenv()
 # Configure the app to use SQLAlchemy
 # app.config['SQLALCHEMY_DATABASE_URI'] = 'mysql+pymysql://root:@localhost/ckd_platform'
 
-# app.config['SQLALCHEMY_DATABASE_URI'] = 'postgresql://root:cWAJedzCGO1plS1a6XDEbnTAQSvfcG66@dpg-cvbcd5in91rc739ff960-a.oregon-postgres.render.com/ckd_platform'
-app.config['SQLALCHEMY_DATABASE_URI'] = 'postgresql://ckd_platform_b1xq_user:q43p31vqDR1HC9y9OHyUhse8BCMLUSxA@dpg-d3q0e1ali9vc73bvjd7g-a.oregon-postgres.render.com/ckd_platform_b1xq'
+# ✅ Use the correct Render PostgreSQL connection string
+app.config['SQLALCHEMY_DATABASE_URI'] = (
+    'postgresql://ckd_platform_b1xq_user:'
+    'q43p31vqDR1HC9y9OHyUhse8BCMLUSxA'
+    '@dpg-d3q0e1ali9vc73bvjd7g-a.oregon-postgres.render.com/'
+    'ckd_platform_b1xq?sslmode=require'
+)
+
+# ✅ Ensure SSL is required (Render PostgreSQL enforces this)
+app.config['SQLALCHEMY_ENGINE_OPTIONS'] = {"connect_args": {"sslmode": "require"}}
+
+# ✅ Optional but best practice
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+
+# ✅ Initialize the database
 db = SQLAlchemy(app)
+
 
 # Models
 class User(db.Model):
