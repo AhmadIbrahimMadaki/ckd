@@ -147,42 +147,41 @@ from urllib.parse import urlparse
 
 import psycopg2.extras
 
+# def get_db_connection():
+#     try:
+#         connection = pymysql.connect(
+#             host="localhost",
+#             user="root",
+#             password="",
+#             database="ckd_platform",
+#             cursorclass=pymysql.cursors.DictCursor  # Ensures results are returned as dictionaries
+#         )
+#         return connection
+#     except pymysql.MySQLError as err:
+#         print(f"Database connection error: {err}")
+#         return None
+
 def get_db_connection():
     try:
-        connection = pymysql.connect(
-            host="localhost",
-            user="root",
-            password="",
-            database="ckd_platform",
-            cursorclass=pymysql.cursors.DictCursor  # Ensures results are returned as dictionaries
+        connection = psycopg2.connect(
+            host="dpg-d3q0e1ali9vc73bvjd7g-a",
+            user="ckd_platform_b1xq_user",
+            password="q43p31vqDR1HC9y9OHyUhse8BCMLUSxA",
+            database="ckd_platform_b1xq",
+            cursor_factory=psycopg2.extras.DictCursor  # ✅ Enables dictionary access
         )
+        print("✅ PostgreSQL connection successful")
         return connection
-    except pymysql.MySQLError as err:
+    except psycopg2.Error as err:
         print(f"Database connection error: {err}")
         return None
 
-# def get_db_connection():
-#     try:
-#         connection = psycopg2.connect(
-#             host="dpg-cvbcd5in91rc739ff960-a.oregon-postgres.render.com",
-#             user="root",
-#             password="cWAJedzCGO1plS1a6XDEbnTAQSvfcG66",
-#             database="ckd_platform",
-#             cursor_factory=psycopg2.extras.DictCursor  # ✅ Enables dictionary access
-#         )
-#         return connection
-#     except psycopg2.Error as err:
-#         print(f"Database connection error: {err}")
-#         return None
-    # print("✅ PostgreSQL connection successful")
-    #     return connection
-
-    # except psycopg2.Error as err:
-    #     print(f"❌ Database connection error: {err}")
-    #     return None
-    # except ValueError as ve:
-    #     print(f"❌ Configuration error: {ve}")
-    #     return None
+    except psycopg2.Error as err:
+        print(f"❌ Database connection error: {err}")
+        return None
+    except ValueError as ve:
+        print(f"❌ Configuration error: {ve}")
+        return None
     
 
 from werkzeug.security import generate_password_hash
