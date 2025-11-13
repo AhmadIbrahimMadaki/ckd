@@ -292,14 +292,72 @@ def register():
         return jsonify({"message": f"An error occurred: {str(e)}"}), 500
 
 
+# @app.route('/api/login', methods=['POST'])
+# def login():
+#     db = get_db_connection()
+#     if not db:
+#         return jsonify({"message": "Failed to connect to the database"}), 500
+
+#     try:
+#         cursor = db.cursor()  # Use dictionary cursor for JSON responses
+#         data = request.get_json()
+
+#         email = data.get('email')
+#         password = data.get('password')
+
+#         if not email or not password:
+#             return jsonify({"message": "Email and password are required"}), 400
+
+#         # Fetch user from the database
+#         query = "SELECT * FROM users WHERE email = %s"
+#         cursor.execute(query, (email,))
+#         user = cursor.fetchone()
+
+#         if user and check_password_hash(user['password'], password):  # Verify hashed password
+            
+#             # Determine redirect URL based on user type and other conditions
+#             if user['user_type'] == "patient" and user['diagnosis_status'] == "diagosed":
+#                 redirect_url = "/patient/clinical-history"
+#             elif user['user_type'] == "patient":
+#                 redirect_url = "/patientselection"
+#             elif user['user_type'] == "admin":
+#                 redirect_url = "/admin/dashboard"
+#             else:
+#                 redirect_url = "/dashboard"
+
+#             return jsonify({
+#                 "message": "Login successful!",
+#                 "redirect": redirect_url,
+#                 "user": {
+#                     "id": user['id'],
+#                     "email": user['email'],
+#                     "full_name": user['full_name'],
+#                     "user_type": user['user_type'],
+#                     "diagnosis_status": user['diagnosis_status'],
+#                 }
+#             }), 200
+#         else:
+#             return jsonify({"message": "Invalid email or password."}), 401
+
+#     except Exception as e:
+#         return jsonify({"message": f"An error occurred: {str(e)}"}), 500
+
+#     finally:
+#         try:
+#             if cursor:
+#                 cursor.close()
+#             if db:
+#                 db.close()
+#         except Exception as e:
+#             print(f"Error closing the connection: {e}")
 @app.route('/api/login', methods=['POST'])
 def login():
-    db = get_db_connection()
-    if not db:
+    db_conn = get_db_connection()
+    if not db_conn:
         return jsonify({"message": "Failed to connect to the database"}), 500
 
     try:
-        cursor = db.cursor()  # Use dictionary cursor for JSON responses
+        cursor = db_conn.cursor()
         data = request.get_json()
 
         email = data.get('email')
@@ -308,22 +366,44 @@ def login():
         if not email or not password:
             return jsonify({"message": "Email and password are required"}), 400
 
-        # Fetch user from the database
+        # Fetch user
         query = "SELECT * FROM users WHERE email = %s"
         cursor.execute(query, (email,))
         user = cursor.fetchone()
 
-        if user and check_password_hash(user['password'], password):  # Verify hashed password
-            
-            # Determine redirect URL based on user type and other conditions
-            if user['user_type'] == "patient" and user['diagnosis_status'] == "diagosed":
-                redirect_url = "/patient/clinical-history"
-            elif user['user_type'] == "patient":
-                redirect_url = "/patientselection"
+        if user and check_password_hash(user['password'], password):
+            redirect_url = "/dashboard"  # default
+
+            # ---------- Patient Routing Logic ----------
+            if user['user_type'] == "patient":
+                # Get patient record
+                patient_query = "SELECT id FROM patients WHERE user_id = %s"
+                cursor.execute(patient_query, (user['id'],))
+                patient = cursor.fetchone()
+
+                if patient:
+                    patient_id = patient["id"]
+
+                    # Check if patient has any submitted (non-draft) assessments
+                    assess_query = """
+                        SELECT id FROM assessments 
+                        WHERE patient_id = %s AND is_draft = FALSE 
+                        ORDER BY created_at DESC LIMIT 1
+                    """
+                    cursor.execute(assess_query, (patient_id,))
+                    existing_assessment = cursor.fetchone()
+
+                    if user['diagnosis_status'] == "diagosed":
+                        redirect_url = "/patient/clinical-history"
+                    elif existing_assessment:
+                        # Redirect to patient result page with assessment ID
+                        redirect_url = f"/patientresults/{existing_assessment['id']}"
+                    else:
+                        redirect_url = "/patientselection"
+
+            # ---------- Admin Logic ----------
             elif user['user_type'] == "admin":
                 redirect_url = "/admin/dashboard"
-            else:
-                redirect_url = "/dashboard"
 
             return jsonify({
                 "message": "Login successful!",
@@ -333,23 +413,23 @@ def login():
                     "email": user['email'],
                     "full_name": user['full_name'],
                     "user_type": user['user_type'],
-                    "diagnosis_status": user['diagnosis_status'],
+                    "diagnosis_status": user['diagnosis_status']
                 }
             }), 200
+
         else:
             return jsonify({"message": "Invalid email or password."}), 401
 
     except Exception as e:
+        print(f"Login Error: {e}")
         return jsonify({"message": f"An error occurred: {str(e)}"}), 500
 
     finally:
-        try:
-            if cursor:
-                cursor.close()
-            if db:
-                db.close()
-        except Exception as e:
-            print(f"Error closing the connection: {e}")
+        if cursor:
+            cursor.close()
+        if db_conn:
+            db_conn.close()
+
     
 @app.route('/api/patient/profile', methods=['GET'])
 def get_patient_profile():
