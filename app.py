@@ -15,12 +15,22 @@ from flask_mail import Mail, Message
 from dotenv import load_dotenv
 from werkzeug.security import generate_password_hash
 
+from werkzeug.utils import secure_filename
+from reportlab.lib.pagesizes import A4
+from reportlab.pdfgen import canvas
+from datetime import datetime
+from flask import Flask, request, jsonify, send_file, url_for
+
+import os
+
+UPLOAD_FOLDER = "uploads"
+PDF_FOLDER = "pdfs"
+os.makedirs(UPLOAD_FOLDER, exist_ok=True)
+os.makedirs(PDF_FOLDER, exist_ok=True)
 app = Flask(__name__)
 
 CORS(app)
 
-
-import os
 
 
 load_dotenv()
@@ -35,10 +45,10 @@ load_dotenv()
 
 # ✅ Use the correct Render PostgreSQL connection string
 app.config['SQLALCHEMY_DATABASE_URI'] = (
-    'postgresql://ckd_platform_b1xq_user:'
-    'q43p31vqDR1HC9y9OHyUhse8BCMLUSxA'
-    '@dpg-d3q0e1ali9vc73bvjd7g-a.oregon-postgres.render.com/'
-    'ckd_platform_b1xq?sslmode=require'
+    'postgresql://ckd_platform_dp82_user:'
+    '5WqBhXIycMTSLjY4e63P7Zh5LFlcPejk'
+    '@dpg-d4nigdogjchc73f678f0-a.oregon-postgres.render.com/'
+    'ckd_platform_dp82?sslmode=require'
 )
 
 # ✅ Ensure SSL is required (Render PostgreSQL enforces this)
@@ -104,6 +114,44 @@ class Assessment(db.Model):
             "created_at": self.created_at,
             "updated_at": self.updated_at
         }
+        
+class DiagnosedAssessment(db.Model):
+    __tablename__ = "diagnosed_assessments"
+    
+    id = db.Column(db.Integer, primary_key=True)
+    patient_name = db.Column(db.String(255), nullable=True)
+    age = db.Column(db.Integer, nullable=True)
+    gender = db.Column(db.String(50), nullable=True)
+    egfr = db.Column(db.Float, nullable=True)
+    creatinine = db.Column(db.Float, nullable=True)
+    creatinine_unit = db.Column(db.String(20), nullable=True)
+    race = db.Column(db.String(50), nullable=True)
+    stage = db.Column(db.String(50), nullable=True)           # e.g. "G5 A3"
+    risk_percent = db.Column(db.Float, nullable=True)
+    risk_level = db.Column(db.String(50), nullable=True)     # "Low", "Medium", "High"
+    recommendations = db.Column(db.Text, nullable=True)
+    image_path = db.Column(db.String(512), nullable=True)    # file path if uploaded
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+
+    def to_dict(self):
+        return {
+            "id": self.id,
+            "patient_name": self.patient_name,
+            "age": self.age,
+            "gender": self.gender,
+            "egfr": self.egfr,
+            "creatinine": self.creatinine,
+            "creatinine_unit": self.creatinine_unit,
+            "race": self.race,
+            "stage": self.stage,
+            "risk_percent": self.risk_percent,
+            "risk_level": self.risk_level,
+            "recommendations": self.recommendations,
+            "image_path": self.image_path,
+            "created_at": self.created_at.isoformat()
+        }
+        
+
 
 # class Medicine(db.Model):
 #     __tablename__ = "medicines"
@@ -138,6 +186,38 @@ class Order(db.Model):
     created_at = db.Column(db.DateTime, default=datetime.now, nullable=False)
 
     patient = db.relationship('Patient', backref=db.backref('orders', lazy=True))
+    
+class Appointment(db.Model):
+    __tablename__ = "appointments"
+
+    id = db.Column(db.Integer, primary_key=True)
+
+    # NEW FIELD – link appointment to user
+    patient_id = db.Column(db.Integer, db.ForeignKey("users.id"), nullable=False)
+
+    patient_name = db.Column(db.String(255), nullable=False)
+    patient_contact = db.Column(db.String(100), nullable=False)
+    date = db.Column(db.String(50), nullable=False)
+    time = db.Column(db.String(50), nullable=False)
+    reason = db.Column(db.Text, nullable=True)
+    doctor_email = db.Column(db.String(255), nullable=False)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+
+    # Relationship to user
+    patient = db.relationship("User", backref="appointments")
+
+    def to_dict(self):
+        return {
+            "id": self.id,
+            "patient_id": self.patient_id,
+            "patient_name": self.patient_name,
+            "patient_contact": self.patient_contact,
+            "date": self.date,
+            "time": self.time,
+            "reason": self.reason,
+            "doctor_email": self.doctor_email,
+            "created_at": self.created_at.isoformat()
+        }
      
 import os
 import pymysql
@@ -164,10 +244,10 @@ import psycopg2.extras
 def get_db_connection():
     try:
         connection = psycopg2.connect(
-            host="dpg-d3q0e1ali9vc73bvjd7g-a",
-            user="ckd_platform_b1xq_user",
-            password="q43p31vqDR1HC9y9OHyUhse8BCMLUSxA",
-            database="ckd_platform_b1xq",
+            host="dpg-d4nigdogjchc73f678f0-a",
+            user="ckd_platform_dp82_user",
+            password="5WqBhXIycMTSLjY4e63P7Zh5LFlcPejk",
+            database="ckd_platform_dp82",
             cursor_factory=psycopg2.extras.DictCursor  # ✅ Enables dictionary access
         )
         print("✅ PostgreSQL connection successful")
@@ -227,6 +307,121 @@ def generate_medicines(risk_category):
         ]
     else:
         return []
+    
+# ********** Helper: simple risk calculation (example, replace with your clinical formula) **********
+def compute_risk_and_stage(egfr, creatinine, age, gender, race):
+    # Simple demo logic; replace by CKD-EPI or your model if you have one
+    # Priority: use egfr if available; else estimate using creatinine (very rough)
+    if egfr is not None and egfr > 0:
+        e = egfr
+    elif creatinine is not None and creatinine > 0:
+        # naive approximate inverse relation (demo only)
+        e = max(5.0, 120.0 - creatinine * 10.0)
+    else:
+        e = None
+
+    # stage determination by eGFR (KDIGO rough rules)
+    if e is None:
+        stage = "Unknown"
+        risk_percent = 0.0
+    else:
+        if e >= 90:
+            stage = "G1"
+            risk_percent = 5.0
+        elif e >= 60:
+            stage = "G2"
+            risk_percent = 8.0
+        elif e >= 45:
+            stage = "G3a"
+            risk_percent = 12.0
+        elif e >= 30:
+            stage = "G3b"
+            risk_percent = 20.0
+        elif e >= 15:
+            stage = "G4"
+            risk_percent = 35.0
+        else:
+            stage = "G5"
+            risk_percent = 65.0
+
+    # crude risk adjustment by age and gender (demo)
+    if age and age > 65:
+        risk_percent += 8.0
+    if gender and gender.lower() == "female":
+        risk_percent += 2.0
+
+    # clamp and determine risk level
+    risk_percent = min(99.9, max(0.0, risk_percent))
+    if risk_percent >= 60:
+        level = "High"
+    elif risk_percent >= 30:
+        level = "Medium"
+    else:
+        level = "Low"
+
+    # make stage more specific example combine albuminuria (not provided) -> we will fallback
+    stage_label = f"{stage} A3" if stage == "G5" else stage
+
+    return stage_label, round(risk_percent, 2), level
+
+# ********** Create PDF function using reportlab **********
+def create_result_pdf(assessment: DiagnosedAssessment, output_path):
+    c = canvas.Canvas(output_path, pagesize=A4)
+    width, height = A4
+    margin = 40
+
+    # Title area
+    c.setFillColorRGB(0.1, 0.35, 0.7)  # blue
+    c.rect(0, height - 140, width, 140, fill=1, stroke=0)
+    c.setFillColorRGB(1, 1, 1)
+    c.setFont("Helvetica-Bold", 20)
+    c.drawCentredString(width/2, height - 70, "RISK PREDICTION")
+    c.setFont("Helvetica-Bold", 14)
+    c.drawCentredString(width/2, height - 95, "YOUR RESULTS")
+
+    # Stage & risk
+    c.setFont("Helvetica-Bold", 22)
+    c.setFillColorRGB(0.8, 0.0, 0.0)
+    c.drawCentredString(width/2, height - 170, assessment.stage or "Stage Unknown")
+
+    c.setFont("Helvetica", 12)
+    c.setFillColorRGB(0,0,0)
+    c.drawCentredString(width/2, height - 200, f"Your CKD Stage")
+
+    # Risk percent large
+    c.setFont("Helvetica-Bold", 28)
+    c.drawCentredString(width/2, height - 250, f"{assessment.risk_percent:.2f}%")
+
+    # Risk level
+    c.setFont("Helvetica-Bold", 16)
+    c.drawCentredString(width/2, height - 285, f"You are at a {assessment.risk_level} risk.")
+
+    # Recommendations and patient data
+    text = c.beginText(margin, height - 330)
+    text.setFont("Helvetica", 11)
+    text.setLeading(14)
+    text.textLine(f"Patient name: {assessment.patient_name or 'N/A'}")
+    text.textLine(f"Age: {assessment.age or 'N/A'}  Gender: {assessment.gender or 'N/A'}")
+    text.textLine(f"eGFR: {assessment.egfr or 'N/A'}  Creatinine: {assessment.creatinine or 'N/A'} {assessment.creatinine_unit or ''}")
+    text.textLine("")
+    text.textLine("Recommendations:")
+    for line in (assessment.recommendations or "Please consult a kidney specialist.").split("\n"):
+        text.textLine("- " + line)
+    c.drawText(text)
+
+    # If image exists, place it on the bottom-right
+    if assessment.image_path and os.path.exists(assessment.image_path):
+        try:
+            img_width = 150
+            img_x = width - img_width - margin
+            img_y = margin
+            c.drawImage(assessment.image_path, img_x, img_y, width=img_width, preserveAspectRatio=True)
+        except Exception as e:
+            print("Could not add image to PDF:", e)
+
+    c.showPage()
+    c.save()
+
 
 
 # Routes
@@ -365,60 +560,94 @@ def login():
 
         if not email or not password:
             return jsonify({"message": "Email and password are required"}), 400
-
-        # Fetch user
-        query = "SELECT * FROM users WHERE email = %s"
+        
+        query = """
+                SELECT u.*, p.id AS patient_id, a.id AS assessment_id, a.is_draft
+                FROM users u
+                LEFT JOIN patients p ON p.user_id = u.id
+                LEFT JOIN assessments a ON a.patient_id = p.id
+                WHERE u.email = %s
+                ORDER BY a.created_at DESC
+                LIMIT 1;
+                """
         cursor.execute(query, (email,))
         user = cursor.fetchone()
-
+        
         if user and check_password_hash(user['password'], password):
-            redirect_url = "/dashboard"  # default
-
-            # ---------- Patient Routing Logic ----------
+            
             if user['user_type'] == "patient":
-                # Get patient record
-                patient_query = "SELECT id FROM patients WHERE user_id = %s"
-                cursor.execute(patient_query, (user['id'],))
-                patient = cursor.fetchone()
-
-                if patient:
-                    patient_id = patient["id"]
-
-                    # Check if patient has any submitted (non-draft) assessments
-                    assess_query = """
-                        SELECT id FROM assessments 
-                        WHERE patient_id = %s AND is_draft = FALSE 
-                        ORDER BY created_at DESC LIMIT 1
-                    """
-                    cursor.execute(assess_query, (patient_id,))
-                    existing_assessment = cursor.fetchone()
-
-                    if user['diagnosis_status'] == "diagosed":
-                        redirect_url = "/patient/clinical-history"
-                    elif existing_assessment:
-                        # Redirect to patient result page with assessment ID
-                        redirect_url = f"/patientresults/{existing_assessment['id']}"
-                    else:
-                        redirect_url = "/patientselection"
-
-            # ---------- Admin Logic ----------
+                if user['assessment_id'] and not user['is_draft']:
+                    redirect_url = f"/patientresults/{user['assessment_id']}"
+                elif user['diagnosis_status'] == "diagnosed":
+                    redirect_url = "/patient/clinical-history"
+                else:
+                    redirect_url = "/patientselection"
             elif user['user_type'] == "admin":
                 redirect_url = "/admin/dashboard"
-
+            else:
+                redirect_url = "/dashboard"
+                
             return jsonify({
-                "message": "Login successful!",
-                "redirect": redirect_url,
-                "user": {
-                    "id": user['id'],
-                    "email": user['email'],
-                    "full_name": user['full_name'],
-                    "user_type": user['user_type'],
-                    "diagnosis_status": user['diagnosis_status']
-                }
-            }), 200
+                    "message": "Login successful!",
+                    "redirect": redirect_url,
+                    "user": {
+                        "id": user['id'],
+                        "email": user['email'],
+                        "full_name": user['full_name'],
+                        "user_type": user['user_type'],
+                        "diagnosis_status": user['diagnosis_status']
+                    }
+                }), 200
 
+        
         else:
             return jsonify({"message": "Invalid email or password."}), 401
+        
+        
+
+        # # Fetch user
+        # query = "SELECT * FROM users WHERE email = %s"
+        # cursor.execute(query, (email,))
+        # user = cursor.fetchone()
+
+        # if user and check_password_hash(user['password'], password):
+        #     redirect_url = "/dashboard"  # default
+
+        #     # ---------- Patient Routing Logic ----------
+        #     if user['user_type'] == "patient":
+        #         # Get patient record
+        #         patient_query = "SELECT id FROM patients WHERE user_id = %s"
+        #         cursor.execute(patient_query, (user['id'],))
+        #         patient = cursor.fetchone()
+
+        #         if patient:
+        #             patient_id = patient["id"]
+
+        #             # Check if patient has any submitted (non-draft) assessments
+        #             assess_query = """
+        #                 SELECT id FROM assessments 
+        #                 WHERE patient_id = %s AND is_draft = FALSE 
+        #                 ORDER BY created_at DESC LIMIT 1
+        #             """
+        #             cursor.execute(assess_query, (patient_id,))
+        #             existing_assessment = cursor.fetchone()
+
+        #             if user['diagnosis_status'] == "diagosed":
+        #                 redirect_url = "/patient/clinical-history"
+        #             elif existing_assessment:
+        #                 # Redirect to patient result page with assessment ID
+        #                 redirect_url = f"/patientresults/{existing_assessment['id']}"
+        #             else:
+        #                 redirect_url = "/patientselection"
+
+        #     # ---------- Admin Logic ----------
+        #     elif user['user_type'] == "admin":
+        #         redirect_url = "/admin/dashboard"
+        
+            
+
+            
+        
 
     except Exception as e:
         print(f"Login Error: {e}")
@@ -527,6 +756,148 @@ def update_clinical_history():
 #         }), 201
 #     except Exception as e:
 #         return jsonify({"message": str(e)}), 500
+
+# POST new diagnosed assessment (multipart/form-data to support image upload)
+@app.route("/api/diagnosed-assessments", methods=["POST"])
+def create_or_update_diagnosed_assessment():
+    try:
+        # Input fields
+        patient_id = request.form.get("id")  # optional
+        patient_name = request.form.get("patient_name")
+        age = request.form.get("age")
+        gender = request.form.get("gender")
+        egfr = request.form.get("egfr")
+        creatinine = request.form.get("creatinine")
+        creatinine_unit = request.form.get("creatinine_unit")
+        race = request.form.get("race")
+
+        # Parse numbers
+        age_val = int(age) if age else None
+        egfr_val = float(egfr) if egfr else None
+        creat_val = float(creatinine) if creatinine else None
+
+        # Compute stage & risk
+        stage_label, risk_percent, risk_level = compute_risk_and_stage(
+            egfr_val, creat_val, age_val, gender, race
+        )
+
+        # Dynamic recommendations
+        recommendations = []
+        if stage_label.startswith("G1") or stage_label.startswith("G2"):
+            recommendations.append("Maintain healthy lifestyle and diet.")
+            recommendations.append("Monitor blood pressure and kidney function periodically.")
+        elif stage_label.startswith("G3"):
+            recommendations.append("Consult a nephrologist for early management.")
+            recommendations.append("Review medications; avoid nephrotoxic drugs.")
+            recommendations.append("Monitor labs every 1–3 months.")
+        elif stage_label.startswith("G4"):
+            recommendations.append("Urgent referral to nephrologist.")
+            recommendations.append("Prepare for potential dialysis.")
+            recommendations.append("Strictly control blood pressure and comorbidities.")
+        elif stage_label.startswith("G5"):
+            recommendations.append("Immediate nephrology management; dialysis likely needed.")
+            recommendations.append("Hospitalization may be required.")
+        else:
+            recommendations.append("Further evaluation required; insufficient data.")
+
+        if risk_level == "High":
+            recommendations.append("High-risk: follow-up every 1–2 weeks.")
+        elif risk_level == "Medium":
+            recommendations.append("Medium-risk: follow-up every 2–4 weeks.")
+        else:
+            recommendations.append("Low-risk: routine follow-up.")
+
+        recommendations_text = "\n".join(recommendations)
+
+        # Handle file upload
+        image_path = None
+        if 'image' in request.files:
+            f = request.files['image']
+            if f and f.filename:
+                fname = secure_filename(f.filename)
+                timestamp = datetime.utcnow().strftime("%Y%m%d%H%M%S")
+                saved_name = f"{timestamp}_{fname}"
+                full_path = os.path.join(UPLOAD_FOLDER, saved_name)
+                f.save(full_path)
+                image_path = full_path
+
+        # Retrieve existing record if id is provided
+        if patient_id:
+            assessment = DiagnosedAssessment.query.get(patient_id)
+        else:
+            assessment = DiagnosedAssessment.query.filter_by(patient_name=patient_name).first()
+
+        if assessment:
+            # Update existing record
+            assessment.age = age_val
+            assessment.gender = gender
+            assessment.egfr = egfr_val
+            assessment.creatinine = creat_val
+            assessment.creatinine_unit = creatinine_unit
+            assessment.race = race
+            assessment.stage = stage_label
+            assessment.risk_percent = risk_percent
+            assessment.risk_level = risk_level
+            assessment.recommendations = recommendations_text
+            if image_path:
+                assessment.image_path = image_path
+        else:
+            # Create new record
+            assessment = DiagnosedAssessment(
+                patient_name=patient_name,
+                age=age_val,
+                gender=gender,
+                egfr=egfr_val,
+                creatinine=creat_val,
+                creatinine_unit=creatinine_unit,
+                race=race,
+                stage=stage_label,
+                risk_percent=risk_percent,
+                risk_level=risk_level,
+                recommendations=recommendations_text,
+                image_path=image_path
+            )
+            db.session.add(assessment)
+
+        db.session.commit()
+
+        # Generate PDF
+        pdf_name = f"diagnosed_result_{assessment.id}.pdf"
+        pdf_path = os.path.join(PDF_FOLDER, pdf_name)
+        create_result_pdf(assessment, pdf_path)
+
+        download_url = url_for("download_pdf", assessment_id=assessment.id, _external=True)
+        return jsonify({"assessment": assessment.to_dict(), "pdf_url": download_url}), 201
+
+    except Exception as e:
+        print("Error:", e)
+        return jsonify({"error": str(e)}), 500
+    
+@app.route("/api/diagnosed-assessments/<int:assessment_id>", methods=["GET"])
+def get_diagnosed_assessment(assessment_id):
+    a = DiagnosedAssessment.query.get(assessment_id)
+    if not a:
+        return jsonify({"error": "not found"}), 404
+    return jsonify({"assessment": a.to_dict()})
+
+@app.route("/api/diagnosed-assessments/<int:assessment_id>/pdf", methods=["GET"])
+def download_pdf(assessment_id):
+    pdf_name = f"diagnosed_result_{assessment_id}.pdf"
+    pdf_path = os.path.join(PDF_FOLDER, pdf_name)
+    if not os.path.exists(pdf_path):
+        # regenerate if necessary
+        a = DiagnosedAssessment.query.get(assessment_id)
+        if not a:
+            return jsonify({"error":"not found"}), 404
+        create_result_pdf(a, pdf_path)
+    return send_file(pdf_path, as_attachment=True)
+
+# Small helper route to test server & example image path
+@app.route("/api/test-image", methods=["GET"])
+def test_image():
+    # return the local test image path you provided earlier for quick preview
+    return jsonify({"example_image_path": "/mnt/data/WhatsApp Image 2025-11-19 at 19.40.58.jpeg"})
+
 
 # ---------------------- API Route for Prediction ----------------------
 @app.route("/api/assessments", methods=["POST"])
@@ -901,6 +1272,47 @@ def update_user(user_id):
     return jsonify({"message": "User updated successfully"}), 200
 
 
+@app.route("/api/schedule-appointment", methods=["POST"])
+def schedule_appointment():
+    try:
+        data = request.json
+
+        new_appointment = Appointment(
+            patient_id = data.get("patient_id"),
+            patient_name=data.get("patient_name"),
+            patient_contact=data.get("patient_contact"),
+            date=data.get("date"),
+            time=data.get("time"),
+            reason=data.get("reason"),
+            doctor_email=data.get("doctor_email")   # correct
+        )
+
+        db.session.add(new_appointment)
+        db.session.commit()
+
+        # Send email notification
+        send_doctor_email(new_appointment.doctor_email, new_appointment)
+
+        return jsonify({
+            "message": "Appointment scheduled successfully",
+            "appointment": new_appointment.to_dict()
+        }), 201
+
+    except Exception as e:
+        print("Error:", e)
+        return jsonify({"error": str(e)}), 500
+
+@app.route("/api/appointments/<int:patient_id>", methods=["GET"])
+def get_appointments_for_user(patient_id):
+    try:
+        appointments = Appointment.query.filter_by(patient_id=patient_id).all()
+        return jsonify([appt.to_dict() for appt in appointments]), 200
+
+    except Exception as e:
+        print("Error:", e)
+        return jsonify({"error": "Server error"}), 500
+
+
 # Configure Flask-Mail
 app.config['MAIL_SERVER'] = 'smtp.gmail.com'
 app.config['MAIL_PORT'] = 465   # Use 465 if SSL is required
@@ -944,6 +1356,67 @@ def send_email():
         return jsonify({"error": str(e)}), 500
 
 
+def send_doctor_email(doctor_email, appointment):
+    try:
+        msg = Message(
+            subject="New Appointment Scheduled",
+            recipients=[doctor_email]
+        )
+
+        msg.body = f"""
+A new appointment has been scheduled.
+
+Patient Name: {appointment.patient_name}
+Contact: {appointment.patient_contact}
+Date: {appointment.date}
+Time: {appointment.time}
+Reason: {appointment.reason}
+
+Please attend to this appointment.
+
+-- generated by NAIR
+        """
+
+        mail.send(msg)
+        print("Email sent successfully to doctor.")
+
+    except Exception as e:
+        print("Email Error:", e)    
+# from twilio.rest import Client
+
+# twilio_sid = "YOUR_TWILIO_SID"
+# twilio_token = "YOUR_TWILIO_AUTH_TOKEN"
+# whatsapp_from = "whatsapp:+14155238886"  # Twilio sandbox number
+
+# client = Client(twilio_sid, twilio_token)
+
+# def send_whatsapp_notification(phone, appointment):
+#     message = f"""
+# New Appointment Scheduled:
+
+# Patient: {appointment.patient_name}
+# Date: {appointment.date}
+# Time: {appointment.time}
+# Reason: {appointment.reason}
+# """
+
+#     client.messages.create(
+#         body=message,
+#         from_=whatsapp_from,
+#         to=f"whatsapp:{phone}"
+#     )
+
+# def send_sms_notification(phone, appointment):
+#     message = f"""
+# Appointment Confirmed:
+# {appointment.date} at {appointment.time}
+# """
+
+#     client.messages.create(
+#         body=message,
+#         from_="+1234567890",  # Twilio phone number
+#         to=phone
+#     )
 
 # Create the tables within the app context
 with app.app_context():
